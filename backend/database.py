@@ -23,7 +23,6 @@ def addAttendence(id: str, date: str, status: bool):
     date_ref.update({id: status})
 
 def getAttendence(date: str):
-    all = 10
     rdata = {}
     date_ref = attendent.child(date)
     data = date_ref.get()
@@ -41,16 +40,15 @@ def getAttendence(date: str):
         return [present, present, present, present]
 
     if data is None:
-        for i in range(1, all + 1):
-            id = str(i).zfill(3)
-            rdata[id] = [0, 0, 0, 0]
+        # Fallback if no records exist for the given date
+        for i in range(1, 11):
+            student_id = str(i).zfill(3)
+            rdata[student_id] = [0, 0, 0, 0]
     else:
-        for i in range(1, all + 1):
-            id = str(i).zfill(3)
-            if id in data:
-                rdata[id] = normalize_lectures(data[id])
-            else:
-                rdata[id] = [0, 0, 0, 0]
+        # Dynamically iterate over all existing student IDs stored in Firebase
+        for student_id, lectures in data.items():
+            rdata[student_id] = normalize_lectures(lectures)
+
     return rdata
 
 def getApprovalStatus(date: str):
