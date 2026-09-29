@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>University IoT Attendance Dashboard</title>
-
+    <title>University IoT Attendance & Main Gate Dashboard</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -49,19 +48,12 @@
             align-items: center;
         }
 
-        .search-input,
-        .date-input {
+        .search-input, .date-input {
             padding: 8px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             outline: none;
             font-size: 0.9rem;
-        }
-
-        .search-input:focus,
-        .date-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
 
         .refresh-badge {
@@ -83,30 +75,39 @@
         }
 
         @keyframes pulse {
-            0% {
-                transform: scale(0.95);
-                opacity: 0.7;
-            }
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
 
-            50% {
-                transform: scale(1.2);
-                opacity: 1;
-            }
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
 
-            100% {
-                transform: scale(0.95);
-                opacity: 0.7;
-            }
+        .tab-btn {
+            padding: 8px 16px;
+            border: 1px solid #cbd5e1;
+            background: #f1f5f9;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
-        th,
-        td {
+        th, td {
             padding: 12px 16px;
             text-align: center;
             border-bottom: 1px solid #e5e7eb;
@@ -124,20 +125,9 @@
             font-size: 0.85rem;
         }
 
-        .status-full {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-
-        .status-half {
-            background-color: #fef9c3;
-            color: #a16207;
-        }
-
-        .status-absent {
-            background-color: #fee2e2;
-            color: #b91c1c;
-        }
+        .status-full { background-color: #dcfce7; color: #15803d; }
+        .status-half { background-color: #fef9c3; color: #a16207; }
+        .status-absent { background-color: #fee2e2; color: #b91c1c; }
 
         .footer-controls {
             display: flex;
@@ -146,23 +136,9 @@
             margin-top: 20px;
         }
 
-        .legend {
-            display: flex;
-            gap: 15px;
-            font-size: 0.9rem;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .legend-box {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
-        }
+        .legend { display: flex; gap: 15px; font-size: 0.9rem; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-box { width: 12px; height: 12px; border-radius: 3px; }
 
         button {
             padding: 8px 16px;
@@ -170,193 +146,56 @@
             border-radius: 6px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
         }
 
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-approve {
-            background-color: var(--success);
-            color: white;
-            padding: 10px 20px;
-            display: none;
-        }
-
-        .btn-approve:disabled {
-            background-color: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .btn-download {
-            background-color: var(--primary);
-            color: white;
-            padding: 10px 20px;
-        }
-
-        .btn-download:hover {
-            background-color: var(--primary-hover);
-        }
-
-        /* Modal Styles */
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-approve { background-color: var(--success); color: white; display: none; }
+        .btn-download { background-color: var(--primary); color: white; }
 
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
+            display: none; justify-content: center; align-items: center;
             z-index: 1000;
         }
 
         .modal {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 320px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background: white; padding: 25px; border-radius: 10px; width: 320px;
         }
 
-        .modal h3 {
-            margin-top: 0;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            width: 93%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .error-msg {
-            color: var(--danger);
-            font-size: 0.85rem;
-            display: none;
-            margin-bottom: 10px;
-        }
-
-        .no-data {
-            padding: 20px;
-            color: #6b7280;
-            font-style: italic;
-        }
-
-        /* Responsive */
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 15px;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-
-            .header-controls {
-                width: 100%;
-                flex-wrap: wrap;
-            }
-
-            .search-input,
-            .date-input {
-                flex: 1;
-                min-width: 140px;
-            }
-
-            table {
-                font-size: 0.8rem;
-            }
-
-            th,
-            td {
-                padding: 8px 5px;
-            }
-
-            .footer-controls {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-        }
+        .form-group { margin-bottom: 15px; }
+        .form-group input { width: 93%; padding: 8px; }
+        .error-msg { color: var(--danger); font-size: 0.85rem; display: none; margin-bottom: 10px; }
+        .no-data { padding: 20px; color: #6b7280; font-style: italic; }
     </style>
 </head>
-
 <body>
 
-    <div class="container">
-
-        <div class="header">
-
-            <div>
-                <h2 style="margin: 0;">
-                    Lecture Attendance Dashboard
-                </h2>
-
-                <div class="refresh-badge">
-                    <span class="pulse-dot"></span>
-                    Live Sync Active
-                    (Polling http://127.0.0.1:8000 every 5s)
-                </div>
-            </div>
-
-            <div class="header-controls">
-
-                <input
-                    type="text"
-                    id="searchInput"
-                    class="search-input"
-                    placeholder="🔍 Search Index..."
-                    oninput="filterTable()"
-                >
-
-                <!-- Future dates are disabled using max -->
-                <input
-                    type="date"
-                    id="datePicker"
-                    class="date-input"
-                    onchange="handleDateChange()"
-                >
-
-                <button
-                    class="btn-primary"
-                    id="adminBtn"
-                    onclick="toggleAdminAuth()"
-                >
-                    Admin Panel
-                </button>
-
+<div class="container">
+    <div class="header">
+        <div>
+            <h2 style="margin: 0;">University IoT Attendance & Gate Dashboard</h2>
+            <div class="refresh-badge">
+                <span class="pulse-dot"></span> Live Sync Active (Polling API every 5s)
             </div>
         </div>
+        <div class="header-controls">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search Index..." oninput="filterTable()">
+            <input type="date" id="datePicker" class="date-input" onchange="handleDateChange()">
+            <button class="btn-primary" id="adminBtn" onclick="toggleAdminAuth()">Admin Panel</button>
+        </div>
+    </div>
 
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" id="tabLecBtn" onclick="switchTab('lecture')">Lecture Hall Attendance</button>
+        <button class="tab-btn" id="tabGateBtn" onclick="switchTab('maingate')">Main Gate Access Logs</button>
+    </div>
 
+    <!-- Lecture Attendance View -->
+    <div id="lectureView">
         <table>
-
             <thead>
                 <tr>
                     <th>Index</th>
@@ -367,1002 +206,261 @@
                     <th>Final Attend</th>
                 </tr>
             </thead>
-
-            <tbody id="tableBody">
-                <!-- Data fetched dynamically -->
-            </tbody>
-
+            <tbody id="tableBody"></tbody>
         </table>
 
-
         <div class="footer-controls">
-
             <div class="legend">
-
-                <div class="legend-item">
-                    <span
-                        class="legend-box"
-                        style="background:#dcfce7;"
-                    ></span>
-                    Full Day
-                </div>
-
-                <div class="legend-item">
-                    <span
-                        class="legend-box"
-                        style="background:#fef9c3;"
-                    ></span>
-                    Half Day
-                </div>
-
-                <div class="legend-item">
-                    <span
-                        class="legend-box"
-                        style="background:#fee2e2;"
-                    ></span>
-                    Absent
-                </div>
-
+                <div class="legend-item"><span class="legend-box" style="background:#dcfce7;"></span> Full Day</div>
+                <div class="legend-item"><span class="legend-box" style="background:#fef9c3;"></span> Half Day</div>
+                <div class="legend-item"><span class="legend-box" style="background:#fee2e2;"></span> Absent</div>
             </div>
-
-
             <div style="display: flex; gap: 10px;">
-
-                <button
-                    class="btn-download"
-                    onclick="downloadCsvReport()"
-                >
-                    Download CSV
-                </button>
-
-                <button
-                    id="approveBtn"
-                    class="btn-approve"
-                    onclick="approveAttendance()"
-                >
-                    Approve Attendance
-                </button>
-
+                <button class="btn-download" onclick="downloadCsvReport()">Download CSV</button>
+                <button id="approveBtn" class="btn-approve" onclick="approveAttendance()">Approve Attendance</button>
             </div>
-
         </div>
-
     </div>
 
-
-    <!-- Login Modal -->
-
-    <div class="modal-overlay" id="loginModal">
-
-        <div class="modal">
-
-            <h3>Admin Login</h3>
-
-            <div
-                class="error-msg"
-                id="loginError"
-            >
-                Invalid Username or Password
-            </div>
-
-            <div class="form-group">
-
-                <label>Username</label>
-
-                <input
-                    type="text"
-                    id="username"
-                    placeholder="admin"
-                >
-
-            </div>
-
-            <div class="form-group">
-
-                <label>Password</label>
-
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="admin"
-                >
-
-            </div>
-
-            <div
-                style="
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 8px;
-                "
-            >
-
-                <button onclick="closeModal()">
-                    Cancel
-                </button>
-
-                <button
-                    class="btn-primary"
-                    onclick="handleLogin()"
-                >
-                    Login
-                </button>
-
-            </div>
-
-        </div>
-
+    <!-- Main Gate Access View -->
+    <div id="mainGateView" style="display: none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Index</th>
+                    <th>Entry Timestamp</th>
+                    <th>Gate Status</th>
+                </tr>
+            </thead>
+            <tbody id="gateTableBody"></tbody>
+        </table>
     </div>
+</div>
 
+<!-- Login Modal -->
+<div class="modal-overlay" id="loginModal">
+    <div class="modal">
+        <h3>Admin Login</h3>
+        <div class="error-msg" id="loginError">Invalid Username or Password</div>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" placeholder="admin">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="admin">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="btn-primary" onclick="handleLogin()">Login</button>
+        </div>
+    </div>
+</div>
 
-    <script>
+<script>
+    const API_BASE_URL = "https://backend-ten-zeta-42.vercel.app";
+    let isAdminLoggedIn = false;
+    let isApprovedByAdmin = false;
+    let cachedStudents = [];
+    let cachedGateEntries = [];
+    let activeTab = "lecture";
 
-        const API_BASE_URL = "https://backend-ten-zeta-42.vercel.app";
+    function getTodayDate() {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
 
-        let isAdminLoggedIn = false;
-        let isApprovedByAdmin = false;
+    window.onload = () => {
+        const today = getTodayDate();
+        const datePicker = document.getElementById('datePicker');
+        datePicker.value = today;
+        datePicker.max = today;
+        fetchData();
+        setInterval(fetchData, 5000);
+    };
 
-        // Store raw attendance data for search filtering
-        let cachedStudents = [];
+    function switchTab(tab) {
+        activeTab = tab;
+        document.getElementById('tabLecBtn').classList.toggle('active', tab === 'lecture');
+        document.getElementById('tabGateBtn').classList.toggle('active', tab === 'maingate');
+        document.getElementById('lectureView').style.display = tab === 'lecture' ? 'block' : 'none';
+        document.getElementById('mainGateView').style.display = tab === 'maingate' ? 'block' : 'none';
+        filterTable();
+    }
 
-
-        /*
-         * Get today's date in YYYY-MM-DD format.
-         *
-         * Using local time instead of UTC prevents the date
-         * from changing unexpectedly around midnight.
-         */
-        function getTodayDate() {
-
-            const today = new Date();
-
-            const year = today.getFullYear();
-
-            const month = String(
-                today.getMonth() + 1
-            ).padStart(2, '0');
-
-            const day = String(
-                today.getDate()
-            ).padStart(2, '0');
-
-            return `${year}-${month}-${day}`;
+    function handleDateChange() {
+        const datePicker = document.getElementById('datePicker');
+        if (datePicker.value > getTodayDate()) {
+            alert('Future dates cannot be selected.');
+            datePicker.value = getTodayDate();
         }
+        fetchData();
+    }
 
+    async function fetchData() {
+        const selectedDate = document.getElementById('datePicker').value;
+        if (!selectedDate) return;
 
-        /*
-         * Page load
-         */
-        window.onload = () => {
+        try {
+            const [attendanceRes, approvalRes, gateRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/getAttend?date=${selectedDate}`),
+                fetch(`${API_BASE_URL}/getApprovalStatus?date=${selectedDate}`),
+                fetch(`${API_BASE_URL}/getMainGate?date=${selectedDate}`)
+            ]);
 
-            const today = getTodayDate();
-
-            const datePicker =
-                document.getElementById('datePicker');
-
-            /*
-             * Set today's date as the default date.
-             */
-            datePicker.value = today;
-
-            /*
-             * IMPORTANT:
-             *
-             * This prevents the browser calendar from allowing
-             * dates after today to be selected.
-             */
-            datePicker.max = today;
-
-            fetchData();
-
-            /*
-             * Refresh attendance every 5 seconds.
-             */
-            setInterval(fetchData, 5000);
-        };
-
-
-        /*
-         * Handle date selection
-         */
-        function handleDateChange() {
-
-            const datePicker =
-                document.getElementById('datePicker');
-
-            const selectedDate = datePicker.value;
-
-            const today = getTodayDate();
-
-
-            /*
-             * Extra protection:
-             *
-             * If somebody manually enters a future date,
-             * reset it back to today.
-             */
-            if (selectedDate > today) {
-
-                alert(
-                    'Future dates cannot be selected.'
-                );
-
-                datePicker.value = today;
-
-                fetchData();
-
-                return;
+            if (attendanceRes.ok) {
+                const json = await attendanceRes.json();
+                const attMap = json.data || {};
+                cachedStudents = Object.keys(attMap).sort((a,b)=>Number(a)-Number(b)).map(id => {
+                    const raw = attMap[id];
+                    let lecs = Array.isArray(raw) ? [raw[0]?1:0, raw[1]?1:0, raw[2]?1:0, raw[3]?1:0] : [raw?1:0, raw?1:0, raw?1:0, raw?1:0];
+                    return { index: `DCSD261F-${id}`, lec1: lecs[0], lec2: lecs[1], lec3: lecs[2], lec4: lecs[3] };
+                });
             }
 
+            if (approvalRes.ok) {
+                const appJson = await approvalRes.json();
+                isApprovedByAdmin = !!appJson.approved_by_admin;
+            }
 
-            /*
-             * Also make sure max remains today's date.
-             */
-            datePicker.max = today;
+            if (gateRes.ok) {
+                const gateJson = await gateRes.json();
+                const gateData = gateJson.data || {};
+                cachedGateEntries = [];
+                Object.keys(gateData).forEach(studentId => {
+                    const logs = gateData[studentId];
+                    Object.values(logs).forEach(log => {
+                        cachedGateEntries.push({ index: `DCSD261F-${studentId}`, time: log.timestamp, status: log.status });
+                    });
+                });
+            }
 
-            fetchData();
+            filterTable();
+            updateApproveButtonState();
+        } catch (err) {
+            console.error('API Fetch Error:', err);
         }
-
-
-        /*
-         * Fetch attendance data from backend
-         */
-        async function fetchData() {
-
-            const selectedDate =
-                document.getElementById('datePicker').value;
-
-            if (!selectedDate) {
-                return;
-            }
-
-
-            /*
-             * Extra frontend protection.
-             */
-            const today = getTodayDate();
-
-            if (selectedDate > today) {
-
-                document.getElementById(
-                    'datePicker'
-                ).value = today;
-
-                return;
-            }
-
-
-            try {
-
-                const [
-                    attendanceRes,
-                    approvalRes
-                ] = await Promise.all([
-
-                    fetch(
-                        `${API_BASE_URL}/getAttend?date=${selectedDate}`
-                    ),
-
-                    fetch(
-                        `${API_BASE_URL}/getApprovalStatus?date=${selectedDate}`
-                    )
-
-                ]);
-
-
-                if (!attendanceRes.ok) {
-
-                    throw new Error(
-                        `Attendance API status: ${attendanceRes.status}`
-                    );
-
-                }
-
-
-                if (!approvalRes.ok) {
-
-                    throw new Error(
-                        `Approval API status: ${approvalRes.status}`
-                    );
-
-                }
-
-
-                const jsonResponse =
-                    await attendanceRes.json();
-
-                const approvalJson =
-                    await approvalRes.json();
-
-
-                if (jsonResponse.status === "success") {
-
-                    const attendanceMap =
-                        jsonResponse.data || {};
-
-
-                    isApprovedByAdmin =
-                        !!approvalJson.approved_by_admin;
-
-
-                    /*
-                     * Convert backend attendance values
-                     * into 4 lecture slots per student.
-                     */
-                    cachedStudents = Object.keys(
-                        attendanceMap
-                    )
-                        .sort(
-                            (a, b) =>
-                                Number(a) - Number(b)
-                        )
-                        .map(id => {
-
-                            const rawValue =
-                                attendanceMap[id];
-
-
-                            let lectures =
-                                [0, 0, 0, 0];
-
-
-                            /*
-                             * Backend returns:
-                             *
-                             * [1,0,1,1]
-                             *
-                             * OR
-                             *
-                             * true / false
-                             */
-                            if (
-                                Array.isArray(rawValue)
-                            ) {
-
-                                lectures = [
-
-                                    rawValue[0]
-                                        ? 1
-                                        : 0,
-
-                                    rawValue[1]
-                                        ? 1
-                                        : 0,
-
-                                    rawValue[2]
-                                        ? 1
-                                        : 0,
-
-                                    rawValue[3]
-                                        ? 1
-                                        : 0
-
-                                ];
-
-                            } else {
-
-                                const present =
-                                    rawValue
-                                        ? 1
-                                        : 0;
-
-                                lectures = [
-                                    present,
-                                    present,
-                                    present,
-                                    present
-                                ];
-
-                            }
-
-
-                            return {
-
-                                index:
-                                    `DCSD261F-${id}`,
-
-                                lec1:
-                                    lectures[0],
-
-                                lec2:
-                                    lectures[1],
-
-                                lec3:
-                                    lectures[2],
-
-                                lec4:
-                                    lectures[3]
-
-                            };
-
-                        });
-
-
-                    /*
-                     * Render table with search filter.
-                     */
-                    filterTable();
-
-
-                    /*
-                     * Update approve button.
-                     */
-                    updateApproveButtonState();
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Error fetching data from backend API:',
-                    error
-                );
-
-            }
-
+    }
+
+    function filterTable() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        if (activeTab === 'lecture') {
+            renderTable(cachedStudents.filter(s => s.index.toLowerCase().includes(query)));
+        } else {
+            renderGateTable(cachedGateEntries.filter(g => g.index.toLowerCase().includes(query)));
         }
+    }
 
-
-        /*
-         * Search/filter table
-         */
-        function filterTable() {
-
-            const query =
-                document.getElementById(
-                    'searchInput'
-                ).value
-                .trim()
-                .toLowerCase();
-
-
-            const filtered =
-                cachedStudents.filter(
-                    student =>
-                        student.index
-                            .toLowerCase()
-                            .includes(query)
-                );
-
-
-            renderTable(filtered);
-
+    function renderTable(students) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = "";
+        if (!students.length) {
+            tbody.innerHTML = `<tr><td colspan="6" class="no-data">No matching attendance records found.</td></tr>`;
+            return;
         }
+        students.forEach(student => {
+            const total = student.lec1 + student.lec2 + student.lec3 + student.lec4;
+            let badgeClass = total === 4 ? "status-full" : (total >= 2 ? "status-half" : "status-absent");
+            let statusText = total === 4 ? "Full Attend" : (total >= 2 ? "Half Day" : "Absent");
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${student.index}</strong></td>
+                    <td>${student.lec1 ? '✔️' : '❌'}</td>
+                    <td>${student.lec2 ? '✔️' : '❌'}</td>
+                    <td>${student.lec3 ? '✔️' : '❌'}</td>
+                    <td>${student.lec4 ? '✔️' : '❌'}</td>
+                    <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                </tr>`;
+        });
+    }
 
+    function renderGateTable(entries) {
+        const tbody = document.getElementById('gateTableBody');
+        tbody.innerHTML = "";
+        if (!entries.length) {
+            tbody.innerHTML = `<tr><td colspan="3" class="no-data">No Main Gate scans recorded for this date.</td></tr>`;
+            return;
+        }
+        entries.forEach(entry => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${entry.index}</strong></td>
+                    <td>${entry.time}</td>
+                    <td><span class="badge status-full">${entry.status}</span></td>
+                </tr>`;
+        });
+    }
 
-        /*
-         * Render attendance table
-         */
-        function renderTable(students) {
+    function updateApproveButtonState() {
+        const approveBtn = document.getElementById('approveBtn');
+        if (isAdminLoggedIn) {
+            approveBtn.style.display = 'inline-block';
+            approveBtn.innerText = isApprovedByAdmin ? 'Already Approved' : 'Approve Attendance';
+            approveBtn.disabled = isApprovedByAdmin;
+        } else {
+            approveBtn.style.display = 'none';
+        }
+    }
 
-            const tbody =
-                document.getElementById(
-                    'tableBody'
-                );
+    function toggleAdminAuth() {
+        if (isAdminLoggedIn) {
+            isAdminLoggedIn = false;
+            document.getElementById('adminBtn').innerText = 'Admin Panel';
+            updateApproveButtonState();
+        } else {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+    }
 
+    function closeModal() {
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('loginError').style.display = 'none';
+    }
 
-            tbody.innerHTML = "";
+    function handleLogin() {
+        if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'admin') {
+            isAdminLoggedIn = true;
+            document.getElementById('adminBtn').innerText = 'Logout Admin';
+            closeModal();
+            updateApproveButtonState();
+        } else {
+            document.getElementById('loginError').style.display = 'block';
+        }
+    }
 
-
-            if (
-                !students ||
-                students.length === 0
-            ) {
-
-                tbody.innerHTML = `
-                    <tr>
-                        <td
-                            colspan="6"
-                            class="no-data"
-                        >
-                            No matching attendance
-                            records found.
-                        </td>
-                    </tr>
-                `;
-
-                return;
-            }
-
-
-            students.forEach(student => {
-
-                const total =
-                    student.lec1 +
-                    student.lec2 +
-                    student.lec3 +
-                    student.lec4;
-
-
-                let badgeClass =
-                    "status-absent";
-
-                let statusText =
-                    "Absent";
-
-
-                if (total === 4) {
-
-                    badgeClass =
-                        "status-full";
-
-                    statusText =
-                        "Full Attend";
-
-                } else if (total >= 2) {
-
-                    badgeClass =
-                        "status-half";
-
-                    statusText =
-                        "Half Day";
-
-                }
-
-
-                tbody.innerHTML += `
-
-                    <tr>
-
-                        <td>
-                            <strong>
-                                ${student.index}
-                            </strong>
-                        </td>
-
-                        <td>
-                            ${student.lec1
-                                ? '✔️'
-                                : '❌'}
-                        </td>
-
-                        <td>
-                            ${student.lec2
-                                ? '✔️'
-                                : '❌'}
-                        </td>
-
-                        <td>
-                            ${student.lec3
-                                ? '✔️'
-                                : '❌'}
-                        </td>
-
-                        <td>
-                            ${student.lec4
-                                ? '✔️'
-                                : '❌'}
-                        </td>
-
-                        <td>
-                            <span
-                                class="badge ${badgeClass}"
-                            >
-                                ${statusText}
-                            </span>
-                        </td>
-
-                    </tr>
-
-                `;
-
+    async function approveAttendance() {
+        const selectedDate = document.getElementById('datePicker').value;
+        try {
+            const response = await fetch(`${API_BASE_URL}/approveAttend`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: selectedDate, approved: true })
             });
-
-        }
-
-
-        /*
-         * Update approve button
-         */
-        function updateApproveButtonState() {
-
-            const approveBtn =
-                document.getElementById(
-                    'approveBtn'
-                );
-
-
-            if (isAdminLoggedIn) {
-
-                approveBtn.style.display =
-                    'inline-block';
-
-
-                if (isApprovedByAdmin) {
-
-                    approveBtn.innerText =
-                        'Already Approved';
-
-                    approveBtn.disabled =
-                        true;
-
-                } else {
-
-                    approveBtn.innerText =
-                        'Approve Attendance';
-
-                    approveBtn.disabled =
-                        false;
-
-                }
-
-            } else {
-
-                approveBtn.style.display =
-                    'none';
-
+            if (response.ok) {
+                alert(`Attendance for ${selectedDate} approved!`);
+                fetchData();
             }
-
+        } catch (error) {
+            console.error('Approval Error:', error);
         }
-
-
-        /*
-         * Admin login/logout
-         */
-        function toggleAdminAuth() {
-
-            if (isAdminLoggedIn) {
-
-                isAdminLoggedIn = false;
-
-                document.getElementById(
-                    'adminBtn'
-                ).innerText =
-                    'Admin Panel';
-
-
-                updateApproveButtonState();
-
-
-                alert(
-                    'Logged out from Admin Panel'
-                );
-
-            } else {
-
-                document.getElementById(
-                    'loginModal'
-                ).style.display =
-                    'flex';
-
-            }
-
-        }
-
-
-        /*
-         * Close login modal
-         */
-        function closeModal() {
-
-            document.getElementById(
-                'loginModal'
-            ).style.display =
-                'none';
-
-
-            document.getElementById(
-                'loginError'
-            ).style.display =
-                'none';
-
-        }
-
-
-        /*
-         * Admin login
-         */
-        function handleLogin() {
-
-            const user =
-                document.getElementById(
-                    'username'
-                ).value;
-
-
-            const pass =
-                document.getElementById(
-                    'password'
-                ).value;
-
-
-            if (
-                user === 'admin' &&
-                pass === 'admin'
-            ) {
-
-                isAdminLoggedIn = true;
-
-
-                document.getElementById(
-                    'adminBtn'
-                ).innerText =
-                    'Logout Admin';
-
-
-                closeModal();
-
-
-                updateApproveButtonState();
-
-
-                document.getElementById(
-                    'username'
-                ).value = '';
-
-
-                document.getElementById(
-                    'password'
-                ).value = '';
-
-            } else {
-
-                document.getElementById(
-                    'loginError'
-                ).style.display =
-                    'block';
-
-            }
-
-        }
-
-
-        /*
-         * Approve attendance
-         */
-        async function approveAttendance() {
-
-            const selectedDate =
-                document.getElementById(
-                    'datePicker'
-                ).value;
-
-
-            /*
-             * Prevent approving future dates.
-             */
-            const today = getTodayDate();
-
-            if (selectedDate > today) {
-
-                alert(
-                    'Future dates cannot be approved.'
-                );
-
-                return;
-            }
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        `${API_BASE_URL}/approveAttend?date=${selectedDate}`,
-                        {
-                            method: 'POST'
-                        }
-                    );
-
-
-                if (response.ok) {
-
-                    alert(
-                        `Attendance for ${selectedDate} successfully approved!`
-                    );
-
-
-                    fetchData();
-
-                } else {
-
-                    alert(
-                        'Failed to send approval to server.'
-                    );
-
-                }
-
-            } catch (error) {
-
-                console.error(
-                    'Error approving attendance:',
-                    error
-                );
-
-
-                alert(
-                    'Connection error when sending POST request.'
-                );
-
-            }
-
-        }
-
-
-        /*
-         * Escape CSV values
-         */
-        function escapeCsvValue(value) {
-
-            const strValue =
-                String(value ?? '');
-
-
-            if (
-                strValue.includes(',') ||
-                strValue.includes('"') ||
-                strValue.includes('\n')
-            ) {
-
-                return `"${strValue.replace(
-                    /"/g,
-                    '""'
-                )}"`;
-
-            }
-
-
-            return strValue;
-
-        }
-
-
-        /*
-         * Download CSV report
-         */
-        function downloadCsvReport() {
-
-            const selectedDate =
-                document.getElementById(
-                    'datePicker'
-                ).value;
-
-
-            const query =
-                document.getElementById(
-                    'searchInput'
-                ).value
-                .trim()
-                .toLowerCase();
-
-
-            const studentsToExport =
-                cachedStudents.filter(
-                    student =>
-                        student.index
-                            .toLowerCase()
-                            .includes(query)
-                );
-
-
-            if (
-                !studentsToExport.length
-            ) {
-
-                alert(
-                    'No attendance data available to export.'
-                );
-
-                return;
-
-            }
-
-
-            const headers = [
-
-                'Date',
-                'Index',
-                'Lecture 1',
-                'Lecture 2',
-                'Lecture 3',
-                'Lecture 4',
-                'Total Present',
-                'Final Status',
-                'Approved By Admin'
-
-            ];
-
-
-            const rows =
-                studentsToExport.map(
-                    student => {
-
-                        const total =
-                            student.lec1 +
-                            student.lec2 +
-                            student.lec3 +
-                            student.lec4;
-
-
-                        const status =
-                            total === 4
-                                ? 'Full Attend'
-                                : (
-                                    total >= 2
-                                        ? 'Half Day'
-                                        : 'Absent'
-                                );
-
-
-                        return [
-
-                            selectedDate,
-
-                            student.index,
-
-                            student.lec1,
-
-                            student.lec2,
-
-                            student.lec3,
-
-                            student.lec4,
-
-                            total,
-
-                            status,
-
-                            isApprovedByAdmin
-                                ? 'true'
-                                : 'false'
-
-                        ];
-
-                    }
-                );
-
-
-            const csvContent =
-                [headers, ...rows]
-                    .map(
-                        row =>
-                            row
-                                .map(
-                                    escapeCsvValue
-                                )
-                                .join(',')
-                    )
-                    .join('\n');
-
-
-            const blob =
-                new Blob(
-                    [csvContent],
-                    {
-                        type:
-                            'text/csv;charset=utf-8;'
-                    }
-                );
-
-
-            const url =
-                URL.createObjectURL(blob);
-
-
-            const link =
-                document.createElement('a');
-
-
-            link.href = url;
-
-
-            link.download =
-                `attendance_report_${selectedDate || 'unknown-date'}.csv`;
-
-
-            document.body.appendChild(link);
-
-
-            link.click();
-
-
-            document.body.removeChild(link);
-
-
-            URL.revokeObjectURL(url);
-
-        }
-
-    </script>
-
+    }
+
+    function downloadCsvReport() {
+        const selectedDate = document.getElementById('datePicker').value;
+        if (!cachedStudents.length) return alert('No data available to export.');
+        const headers = ['Date', 'Index', 'Lec 1', 'Lec 2', 'Lec 3', 'Lec 4', 'Total', 'Status', 'Approved'];
+        const rows = cachedStudents.map(s => {
+            const total = s.lec1 + s.lec2 + s.lec3 + s.lec4;
+            const status = total === 4 ? 'Full Attend' : (total >= 2 ? 'Half Day' : 'Absent');
+            return [selectedDate, s.index, s.lec1, s.lec2, s.lec3, s.lec4, total, status, isApprovedByAdmin];
+        });
+        const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `attendance_report_${selectedDate}.csv`;
+        link.click();
+    }
+</script>
 </body>
 </html>
