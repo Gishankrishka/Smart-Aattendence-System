@@ -10,8 +10,10 @@ from database import (
     approveAttendance,
     getApprovalStatus,
     getAttendence,
+    getCardMappings,
     getMainGateEntries,
     recordMainGateEntry,
+    registerCardMapping,
 )
 
 app = FastAPI(title="University IoT Attendance & Gate API")
@@ -34,6 +36,10 @@ class MainGateEntryRequest(BaseModel):
     id: str
     date: str
     time: Optional[str] = None
+
+class CardRegisterRequest(BaseModel):
+    uid: str
+    student_id: str
 
 class ApprovalRequest(BaseModel):
     date: str
@@ -84,9 +90,6 @@ def update_attendance(request: AttendanceUpdateRequest):
         "lecture": request.lecture,
     }
 
-# ============================================================================
-# MAIN GATE SUBSYSTEM ENDPOINTS
-# ============================================================================
 @app.post("/updateMainGate", tags=["Main Gate"])
 def update_main_gate(request: MainGateEntryRequest):
     entry_time = request.time or datetime.now().strftime("%H:%M:%S")
@@ -106,4 +109,23 @@ def get_main_gate(date: str):
         "status": "success",
         "date": date,
         "data": data
+    }
+
+# Card Mapping Endpoints
+@app.post("/registerCard", tags=["Card Mappings"])
+def register_card(request: CardRegisterRequest):
+    registerCardMapping(request.uid, request.student_id)
+    return {
+        "status": "success",
+        "message": "Card mapping saved to database.",
+        "uid": request.uid,
+        "student_id": request.student_id
+    }
+
+@app.get("/getCardMappings", tags=["Card Mappings"])
+def get_card_mappings():
+    mappings = getCardMappings()
+    return {
+        "status": "success",
+        "data": mappings
     }

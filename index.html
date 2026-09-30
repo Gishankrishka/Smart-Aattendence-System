@@ -191,6 +191,7 @@
     <div class="nav-tabs">
         <button class="tab-btn active" id="tabLecBtn" onclick="switchTab('lecture')">Lecture Hall Attendance</button>
         <button class="tab-btn" id="tabGateBtn" onclick="switchTab('maingate')">Main Gate Access Logs</button>
+        <button class="tab-btn" id="tabCardBtn" onclick="switchTab('cards')">Registered RFID Cards</button>
     </div>
 
     <!-- Lecture Attendance View -->
@@ -235,6 +236,19 @@
             <tbody id="gateTableBody"></tbody>
         </table>
     </div>
+
+    <!-- Registered Cards View -->
+    <div id="cardMappingsView" style="display: none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hardware RFID UID</th>
+                    <th>Assigned Student ID</th>
+                </tr>
+            </thead>
+            <tbody id="cardTableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Login Modal -->
@@ -263,6 +277,7 @@
     let isApprovedByAdmin = false;
     let cachedStudents = [];
     let cachedGateEntries = [];
+    let cachedCardMappings = [];
     let activeTab = "lecture";
 
     function getTodayDate() {
@@ -283,8 +298,12 @@
         activeTab = tab;
         document.getElementById('tabLecBtn').classList.toggle('active', tab === 'lecture');
         document.getElementById('tabGateBtn').classList.toggle('active', tab === 'maingate');
+        document.getElementById('tabCardBtn').classList.toggle('active', tab === 'cards');
+        
         document.getElementById('lectureView').style.display = tab === 'lecture' ? 'block' : 'none';
         document.getElementById('mainGateView').style.display = tab === 'maingate' ? 'block' : 'none';
+        document.getElementById('cardMappingsView').style.display = tab === 'cards' ? 'block' : 'none';
+        
         filterTable();
     }
 
@@ -302,10 +321,11 @@
         if (!selectedDate) return;
 
         try {
-            const [attendanceRes, approvalRes, gateRes] = await Promise.all([
+            const [attendanceRes, approvalRes, gateRes, cardRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/getAttend?date=${selectedDate}`),
                 fetch(`${API_BASE_URL}/getApprovalStatus?date=${selectedDate}`),
-                fetch(`${API_BASE_URL}/getMainGate?date=${selectedDate}`)
+                fetch(`${API_BASE_URL}/getMainGate?date=${selectedDate}`),
+                fetch(`${API_BASE_URL}/getCardMappings`)
             ]);
 
             if (attendanceRes.ok) {
@@ -335,6 +355,15 @@
                 });
             }
 
+            if (cardRes.ok) {
+                const cardJson = await cardRes.json();
+                const cardData = cardJson.data || {};
+                cachedCardMappings = Object.keys(cardData).map(uid => ({
+                    uid: uid,
+                    student_id: cardData[uid]
+                }));
+            }
+
             filterTable();
             updateApproveButtonState();
         } catch (err) {
@@ -346,8 +375,10 @@
         const query = document.getElementById('searchInput').value.trim().toLowerCase();
         if (activeTab === 'lecture') {
             renderTable(cachedStudents.filter(s => s.index.toLowerCase().includes(query)));
-        } else {
+        } else if (activeTab === 'maingate') {
             renderGateTable(cachedGateEntries.filter(g => g.index.toLowerCase().includes(query)));
+        } else if (activeTab === 'cards') {
+            renderCardTable(cachedCardMappings.filter(c => c.uid.toLowerCase().includes(query) || c.student_id.toLowerCase().includes(query)));
         }
     }
 
@@ -387,6 +418,22 @@
                     <td><strong>${entry.index}</strong></td>
                     <td>${entry.time}</td>
                     <td><span class="badge status-full">${entry.status}</span></td>
+                </tr>`;
+        });
+    }
+
+    function renderCardTable(cards) {
+        const tbody = document.getElementById('cardTableBody');
+        tbody.innerHTML = "";
+        if (!cards.length) {
+            tbody.innerHTML = `<tr><td colspan="2" class="no-data">No registered cards found in database.</td></tr>`;
+            return;
+        }
+        cards.forEach(card => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><code>${card.uid}</code></td>
+                    <td><strong>${card.student_id}</strong></td>
                 </tr>`;
         });
     }

@@ -13,6 +13,7 @@ default_app = firebase_admin.initialize_app(cred1, {
 ref = db.reference('DCSD/', app=default_app)
 attendent = ref.child('Attendence/')
 main_gate_ref = ref.child('MainGate/')
+card_mappings_ref = ref.child('CardMappings/')
 
 def addAttendence(id: str, date: str, status: bool):
     date_ref = attendent.child(date)
@@ -53,18 +54,18 @@ def approveAttendance(date: str, approved_by_admin: bool):
     date_ref = attendent.child(date)
     date_ref.update({"approved_by_admin": approved_by_admin})
 
-def addLecAttend(id: int, date: str, lec: int):
+def addLecAttend(id: str, date: str, lec: int):
     date_ref = attendent.child(date)
-    student_id = str(id).zfill(3)
+    clean_id = id.split("-")[-1] if "-" in id else id
+    student_id = str(clean_id).zfill(3) if clean_id.isdigit() else clean_id
     date_ref.update({
         f"{student_id}/{lec}": 1
     })
 
-# ============================================================================
-# MAIN GATE SUBSYSTEM DATABASE FUNCTIONS
-# ============================================================================
+# Main Gate Subsystem Functions
 def recordMainGateEntry(id: str, date: str, timestamp: str = None):
-    student_id = str(id).zfill(3)
+    clean_id = id.split("-")[-1] if "-" in id else id
+    student_id = str(clean_id).zfill(3) if clean_id.isdigit() else clean_id
     if not timestamp:
         timestamp = datetime.datetime.now().strftime("%H:%M:%S")
     
@@ -77,6 +78,19 @@ def recordMainGateEntry(id: str, date: str, timestamp: str = None):
 def getMainGateEntries(date: str):
     gate_date_ref = main_gate_ref.child(date)
     data = gate_date_ref.get()
+    if data is None:
+        return {}
+    return data
+
+# Card Mapping Database Functions
+def registerCardMapping(uid: str, student_id: str):
+    clean_uid = uid.upper().strip()
+    card_mappings_ref.update({
+        clean_uid: student_id
+    })
+
+def getCardMappings():
+    data = card_mappings_ref.get()
     if data is None:
         return {}
     return data
