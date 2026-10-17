@@ -1,7 +1,7 @@
-import firebase_admin
-from firebase_admin import credentials, db
 import datetime
 from typing import Dict, List, Optional
+import firebase_admin
+from firebase_admin import credentials, db
 
 # Initialize Firebase Admin SDK
 cred1 = credentials.Certificate('Database.json')
@@ -14,6 +14,7 @@ ref = db.reference('DCSD/', app=default_app)
 attendent = ref.child('Attendence/')
 main_gate_ref = ref.child('MainGate/')
 card_mappings_ref = ref.child('CardMappings/')
+system_status_ref = ref.child('SystemStatus/')
 
 def addAttendence(id: str, date: str, status: bool):
     date_ref = attendent.child(date)
@@ -93,4 +94,18 @@ def getCardMappings():
     data = card_mappings_ref.get()
     if data is None:
         return {}
+    return data
+
+# Hardware Telemetry System Status Functions
+def updateSystemStatus(queue_cm: int, presence: bool):
+    system_status_ref.update({
+        "queue_cm": queue_cm,
+        "presence": presence,
+        "last_updated": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+def getSystemStatus():
+    data = system_status_ref.get()
+    if data is None:
+        return {"queue_cm": 400, "presence": False}
     return data

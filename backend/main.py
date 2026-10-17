@@ -12,8 +12,10 @@ from database import (
     getAttendence,
     getCardMappings,
     getMainGateEntries,
+    getSystemStatus,
     recordMainGateEntry,
     registerCardMapping,
+    updateSystemStatus,
 )
 
 app = FastAPI(title="University IoT Attendance & Gate API")
@@ -44,6 +46,10 @@ class CardRegisterRequest(BaseModel):
 class ApprovalRequest(BaseModel):
     date: str
     approved: bool = True
+
+class SystemStatusRequest(BaseModel):
+    queue_cm: int
+    presence: bool
 
 @app.get("/", tags=["Health Check"])
 def root():
@@ -128,4 +134,24 @@ def get_card_mappings():
     return {
         "status": "success",
         "data": mappings
+    }
+
+# Live Hardware Telemetry Endpoints
+@app.post("/updateSystemStatus", tags=["System Status"])
+def update_system_status_endpoint(request: SystemStatusRequest):
+    updateSystemStatus(request.queue_cm, request.presence)
+    return {
+        "status": "success",
+        "message": "System status updated successfully.",
+        "queue_cm": request.queue_cm,
+        "presence": request.presence
+    }
+
+@app.get("/getSystemStatus", tags=["System Status"])
+def get_system_status_endpoint():
+    status_data = getSystemStatus()
+    return {
+        "status": "success",
+        "queue_cm": status_data.get("queue_cm", 400),
+        "presence": status_data.get("presence", False)
     }
