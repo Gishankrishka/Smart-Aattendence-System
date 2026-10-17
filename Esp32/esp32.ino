@@ -1,3 +1,5 @@
+// It compiles on my machine. If it doesn't on yours, buy my machine.
+
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>

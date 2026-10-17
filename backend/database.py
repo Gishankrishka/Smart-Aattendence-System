@@ -1,3 +1,6 @@
+# If it breaks, I am no longer the person who wrote it.
+# Copyright (c) 2026 Gishan Krishka. All rights reserved.
+
 import datetime
 from typing import Dict, List, Optional
 import firebase_admin

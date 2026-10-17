@@ -1,3 +1,7 @@
+# Magic. Do not touch.
+#Copyright (c) 2026 Gishan Krishka. All rights reserved.
+
+
 from datetime import datetime
 from typing import Dict, Optional
 
