@@ -80,6 +80,43 @@
             100% { transform: scale(0.95); opacity: 0.7; }
         }
 
+        /* Metrics Cards Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .metric-card.alert {
+            border-left-color: var(--danger);
+        }
+
+        .metric-card.success {
+            border-left-color: var(--success);
+        }
+
+        .metric-title {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-top: 5px;
+            color: #0f172a;
+        }
+
         .nav-tabs {
             display: flex;
             gap: 10px;
@@ -177,13 +214,32 @@
         <div>
             <h2 style="margin: 0;">University IoT Attendance & Gate Dashboard</h2>
             <div class="refresh-badge">
-                <span class="pulse-dot"></span> Live Sync Active (Polling API every 5s)
+                <span class="pulse-dot"></span> Live Sync Active (Polling API every 0.5s)
             </div>
         </div>
         <div class="header-controls">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search Index..." oninput="filterTable()">
             <input type="date" id="datePicker" class="date-input" onchange="handleDateChange()">
             <button class="btn-primary" id="adminBtn" onclick="toggleAdminAuth()">Admin Panel</button>
+        </div>
+    </div>
+
+    <!-- Live Hardware Sensor Telemetry Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card" id="queueCard">
+            <div class="metric-title">Main Gate Queue Distance</div>
+            <div class="metric-value" id="queueDistValue">-- cm</div>
+            <small id="queueStatusText" style="color:#64748b;">Distance to nearest person</small>
+        </div>
+        <div class="metric-card" id="queueCountCard">
+            <div class="metric-title">Gate Queue Level</div>
+            <div class="metric-value" id="queueLevelValue">Normal</div>
+            <small id="queueSubText" style="color:#64748b;">Ultrasonic Queue Monitor</small>
+        </div>
+        <div class="metric-card" id="pirCard">
+            <div class="metric-title">Lecture Room Presence</div>
+            <div class="metric-value" id="pirPresenceValue">--</div>
+            <small id="pirSubText" style="color:#64748b;">PIR Motion Sensor</small>
         </div>
     </div>
 
@@ -291,7 +347,7 @@
         datePicker.value = today;
         datePicker.max = today;
         fetchData();
-        setInterval(fetchData, 5000);
+        setInterval(fetchData, 500);
     };
 
     function switchTab(tab) {
@@ -321,11 +377,12 @@
         if (!selectedDate) return;
 
         try {
-            const [attendanceRes, approvalRes, gateRes, cardRes] = await Promise.all([
+            const [attendanceRes, approvalRes, gateRes, cardRes, statusRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/getAttend?date=${selectedDate}`),
                 fetch(`${API_BASE_URL}/getApprovalStatus?date=${selectedDate}`),
                 fetch(`${API_BASE_URL}/getMainGate?date=${selectedDate}`),
-                fetch(`${API_BASE_URL}/getCardMappings`)
+                fetch(`${API_BASE_URL}/getCardMappings`),
+                fetch(`${API_BASE_URL}/getSystemStatus`)
             ]);
 
             if (attendanceRes.ok) {
@@ -362,6 +419,44 @@
                     uid: uid,
                     student_id: cardData[uid]
                 }));
+            }
+
+            // Update Telemetry UI Cards for Ultrasonic Queue and PIR Presence
+            if (statusRes.ok) {
+                const sysData = await statusRes.json();
+                const dist = sysData.queue_cm !== undefined ? sysData.queue_cm : 0;
+                const isPresent = !!sysData.presence;
+
+                document.getElementById('queueDistValue').innerText = `${dist} cm`;
+                
+                const queueLevelEl = document.getElementById('queueLevelValue');
+                const queueCard = document.getElementById('queueCountCard');
+                
+                if (dist > 0 && dist < 3) {
+                    queueLevelEl.innerText = "Heavy Queue";
+                    queueLevelEl.style.color = "#ef4444";
+                    queueCard.className = "metric-card alert";
+                } else if (dist >= 3 && dist < 15) {
+                    queueLevelEl.innerText = "Moderate Queue";
+                    queueLevelEl.style.color = "#eab308";
+                    queueCard.className = "metric-card";
+                } else {
+                    queueLevelEl.innerText = "Clear Gate";
+                    queueLevelEl.style.color = "#22c55e";
+                    queueCard.className = "metric-card success";
+                }
+
+                const pirValEl = document.getElementById('pirPresenceValue');
+                const pirCard = document.getElementById('pirCard');
+                if (isPresent) {
+                    pirValEl.innerText = "Occupied";
+                    pirValEl.style.color = "#22c55e";
+                    pirCard.className = "metric-card success";
+                } else {
+                    pirValEl.innerText = "Empty Room";
+                    pirValEl.style.color = "#64748b";
+                    pirCard.className = "metric-card";
+                }
             }
 
             filterTable();
