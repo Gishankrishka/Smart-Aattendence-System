@@ -36,8 +36,8 @@ byte ssPins[] = {SS_1_PIN, SS_2_PIN, SS_3_PIN};
 MFRC522 mfrc522[NR_OF_READERS];
 
 // Wi-Fi & API Endpoints
-const char* ssid             = "Galaxy S21+";
-const char* password         = "Gishan2006";
+const char* ssid             = "Your Wifi SSID";
+const char* password         = "Password";
 
 const char* apiLecEndpoint    = "https://backend-ten-zeta-42.vercel.app/updateAttend";
 const char* apiGateEndpoint   = "https://backend-ten-zeta-42.vercel.app/updateMainGate";
